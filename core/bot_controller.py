@@ -63,13 +63,19 @@ class BotController:
     # ---------- 主循环接口 ----------
 
     def handle_frame_for_inference(self, frame):
+        """处理一帧用于推理：仅在 AI 开启时，构建时序 state、模型选动作、后台执行。
+
+        - vision.process(frame) 累积历史帧并返回 (T, H, W) 的归一化时序 state。
+        - trainer.step_only_inference 走 agent 的 policy/q 头选出动作 id。
+        - decision.execute_action 把动作放入后台队列异步执行，不阻塞采集循环。
+        """
         if not self.is_ai_enabled():
             return
         vision_result = self.vision.process(frame)
 
         action = self.trainer.step_only_inference(vision_result)
         key_detail = ACTIONS.get(action, {}).get("detail")
-        logger.info(f"select action_id: {action}, action_detail: {key_detail}")
+        logger.info(f"选择动作 action_id={action}, 详情={key_detail}")
         self.decision.execute_action(action)
 
 

@@ -1,3 +1,11 @@
+"""
+视觉引擎：把实时截屏帧转成模型输入的时序 state。
+
+单帧处理：BGR -> 灰度 -> 等比例 letterbox resize 到 out_size×out_size -> 归一化 [0,1]。
+时序组合：维护最近 history_len 帧的环形缓冲，输出 (history_len, out_size, out_size)，
+不足时用首帧补齐。该输出与训练时 BCDataset/TransitionDataset 的 state 格式一致。
+"""
+
 import cv2
 import numpy as np
 from collections import deque
